@@ -247,7 +247,7 @@ void GzCrazyflieInterface::recvCfLibThread() {
 		int len = recvfrom(fd_cfLib, buf, sizeof(buf), 0, (struct sockaddr *) &remaddr_rcv_cfLib, &addrlen_rcv_cfLib);
 		if (len <= 0 )
 			continue;
-		if (!socketInit_cfLib && buf[0] == 0xF3 && len == 1){
+		if (!socketInit_cfLib && buf[0] == 0xF3 && len == 1){ // Connecting
 			gzmsg << "Received CfLib handshake message..." << std::endl;
 			remaddr_cfLib = remaddr_rcv_cfLib;
 			addrlen_cfLib = addrlen_rcv_cfLib;
@@ -256,8 +256,20 @@ void GzCrazyflieInterface::recvCfLibThread() {
 			// uint8_t data[1] = {0xF3};
 			// sendCfLib(data , sizeof(data));
 		}
-		else if (socketInit_cfLib && buf[0] == 0xF4 && len == 1) {
+		else if (socketInit_cfLib && buf[0] == 0xF4 && len == 1) { // Closing
+			gzmsg << "Received CfLib goodbye message..." << std::endl;
 			socketInit_cfLib = false;
+		else if (buf[0] == 0xF5 && len == 1) { // Ping
+			gzmsg << "Received CfLib ping message..." << std::endl;
+                        struct sockaddr tmp_remaddr_cfLib = remaddr_cfLib;
+                        socklen_t tmp_addrlen_cfLib = addrlen_cfLib;
+			remaddr_cfLib = remaddr_rcv_cfLib;
+			addrlen_cfLib = addrlen_rcv_cfLib;
+			// Send ping response to CfLib
+			uint8_t data[1] = {0xF3};
+			sendCfLib(data , sizeof(data));
+                        remaddr_cfLib = tmp_remaddr_cfLib;
+                        addrlen_cfLib = tmp_addrlen_cfLib;
 		}
 		else if (socketInit_cfLib) {
 			recvCfLib(&buf[0], len);
