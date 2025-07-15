@@ -259,9 +259,10 @@ void GzCrazyflieInterface::recvCfLibThread() {
 		else if (socketInit_cfLib && buf[0] == 0xF4 && len == 1) { // Closing
 			gzmsg << "Received CfLib goodbye message..." << std::endl;
 			socketInit_cfLib = false;
+                }
 		else if (buf[0] == 0xF5 && len == 1) { // Ping
 			gzmsg << "Received CfLib ping message..." << std::endl;
-                        struct sockaddr tmp_remaddr_cfLib = remaddr_cfLib;
+                        struct sockaddr_in tmp_remaddr_cfLib = remaddr_cfLib;
                         socklen_t tmp_addrlen_cfLib = addrlen_cfLib;
 			remaddr_cfLib = remaddr_rcv_cfLib;
 			addrlen_cfLib = addrlen_rcv_cfLib;
